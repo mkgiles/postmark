@@ -1,0 +1,14 @@
+
+Hope you enjoy your new logo, here are the people that
+made your beautiful logo happen :)
+font name: Kavivanar-Regular
+font link: https://fonts.google.com/specimen/Kavivanar
+font author: Tharique Azeez
+font author site: http://thariqueazeez.com/
+
+
+icon designer: Eynav Raphael
+icon designer link: /graphicool
+        
+{"bg":"#F5EDED","icon-gradient-0":"#843F47","icon-gradient-1":"#D0978B","font":"#372222","slogan":"#4b3636"}
+      

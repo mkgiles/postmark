@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name="carriers">
+        <item>An Post</item>
+        <item>Japan Post</item>
+        <item>Royal Mail</item>
+        <item>USPS</item>
+        <item>UPU</item>
+    </string-array>
+</resources>
