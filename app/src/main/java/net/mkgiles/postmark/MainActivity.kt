@@ -2,8 +2,6 @@ package net.mkgiles.postmark
 
 import android.content.Intent
 import android.os.Bundle
-import android.view.MenuItem
-import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.FragmentContainerView
@@ -24,19 +22,9 @@ class MainActivity : AppCompatActivity() {
         }
         navBar.replaceMenu(R.menu.main_app_menu)
         val fab : FloatingActionButton = binding.navBtn
-        fab.setOnClickListener{
-            val intent = Intent(this,PackageActivity::class.java)
-            startActivityForResult(intent,0)
+        fab.setOnClickListener {
+            val intent = Intent(this, PackageActivity::class.java)
+            startActivityForResult(intent, 0)
         }
-
-    }
-
-    override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        when(item.itemId){
-            R.id.app_bar_search -> {
-                Toast.makeText(this,"Search",Toast.LENGTH_SHORT).show()
-            }
-        }
-        return super.onContextItemSelected(item)
     }
 }

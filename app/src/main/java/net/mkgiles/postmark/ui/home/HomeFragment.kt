@@ -20,6 +20,7 @@ class HomeFragment : Fragment() {
 
     private lateinit var app : MainApp
     private lateinit var recycler: RecyclerView
+    private lateinit var adapter: PackageAdapter
     private val viewModel : HomeViewModel by viewModels()
 
     override fun onCreateView(
@@ -29,6 +30,7 @@ class HomeFragment : Fragment() {
     ): View? {
         val binding : FragmentHomeBinding = DataBindingUtil.inflate(inflater,R.layout.fragment_home,container,false)
         recycler = binding.homeRecycler
+        val search = binding.searchBar
         app = activity?.application as MainApp
         viewModel.list.value = app.packages
         recycler.adapter = PackageAdapter(viewModel.list.value!!, object: PackageAdapter.OnItemClickListener {
@@ -41,13 +43,24 @@ class HomeFragment : Fragment() {
                     showDeletePrompt(parcel)
                 }
             })
-        recycler.adapter?.notifyDataSetChanged()
+        adapter = recycler.adapter as PackageAdapter
+        adapter.notifyDataSetChanged()
+        search.setOnQueryTextListener(object: android.widget.SearchView.OnQueryTextListener {
+            override fun onQueryTextSubmit(query: String?): Boolean {
+                return false
+            }
+
+            override fun onQueryTextChange(newText: String?): Boolean {
+                adapter.search(newText)
+                return true
+            }
+        })
         return binding.root
     }
 
     override fun onResume() {
         super.onResume()
-        recycler.adapter!!.notifyDataSetChanged()
+        adapter.notifyDataSetChanged()
     }
 
     fun showDeletePrompt(parcel: PackageModel){
@@ -57,7 +70,7 @@ class HomeFragment : Fragment() {
             setMessage("Delete this package? This cannot be undone.")
             setPositiveButton(android.R.string.yes){_,_ ->
                 app.packages.remove(parcel)
-                recycler.adapter?.notifyDataSetChanged()
+                adapter.notifyDataSetChanged()
             }
             setNegativeButton(android.R.string.no){dialog,_ ->
                 dialog.cancel()
