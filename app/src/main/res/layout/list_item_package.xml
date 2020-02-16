@@ -7,12 +7,16 @@
         <variable
             name="parcel"
             type="net.mkgiles.postmark.models.PackageModel" />
+        <variable
+            name="listener"
+            type="net.mkgiles.postmark.ui.home.PackageAdapter.OnItemClickListener" />
     </data>
 
     <androidx.cardview.widget.CardView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginBottom="@dimen/list_item_spacing_half"
+        android:onClick="@{()->listener.onItemClick(parcel)}"
         app:cardBackgroundColor="@color/surfaceColor">
 
         <androidx.constraintlayout.widget.ConstraintLayout

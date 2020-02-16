@@ -1,5 +1,8 @@
 package net.mkgiles.postmark.models
 
-import java.util.Date
+import android.os.Parcelable
+import kotlinx.android.parcel.Parcelize
+import java.util.*
 
-data class PackageModel(var name: String, var id: String, var carrier: Int, var delivered: Boolean, var updated: Date)
+@Parcelize
+data class PackageModel(var name: String, var id: String, var carrier: Int, var delivered: Boolean, var updated: Date, val uid : UUID = UUID.randomUUID()) : Parcelable
