@@ -30,15 +30,9 @@ class PackageActivity : AppCompatActivity() {
             else {
                 parcel.carrier = binding.packageProviderSpinner.selectedItemPosition
                 if(edit)
-                    app.packages.find{found ->  found.uid == parcel.uid}?.let{found ->
-                        found.carrier = parcel.carrier
-                        found.delivered = parcel.delivered
-                        found.id = parcel.id
-                        found.name = parcel.name
-                        found.updated = parcel.updated
-                    }
+                    app.parcels.update(parcel)
                 else
-                    app.packages.add(parcel)
+                    app.parcels.add(parcel)
                 finish()
             }
         }

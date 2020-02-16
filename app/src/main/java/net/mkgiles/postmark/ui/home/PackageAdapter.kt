@@ -11,7 +11,7 @@ import net.mkgiles.postmark.databinding.ListItemPackageBinding
 import net.mkgiles.postmark.models.PackageModel
 
 class PackageAdapter(private var list: MutableList<PackageModel>, private val listener: OnItemClickListener, private val longListener: OnItemClickListener) : RecyclerView.Adapter<PackageAdapter.ViewHolder>() {
-    private val fullList : List<PackageModel>  = list
+    private var fullList : List<PackageModel>  = list
     class ViewHolder(private val view : View) : RecyclerView.ViewHolder(view){
         fun bind(parcel: PackageModel, listener: OnItemClickListener, longListener: OnItemClickListener){
             val binding : ListItemPackageBinding = DataBindingUtil.getBinding(view)!!
@@ -58,6 +58,11 @@ class PackageAdapter(private var list: MutableList<PackageModel>, private val li
             list = list.filter{
                 filter.contains(it.carrier)
             }.toMutableList()
+        notifyDataSetChanged()
+    }
+    fun newList(newlist: List<PackageModel>){
+        list = newlist.toMutableList()
+        fullList = list
         notifyDataSetChanged()
     }
 }

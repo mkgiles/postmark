@@ -10,7 +10,6 @@ import android.widget.AdapterView
 import androidx.appcompat.widget.SearchView
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.chip.Chip
 import com.google.android.material.chip.ChipGroup
@@ -26,7 +25,6 @@ class HomeFragment : Fragment() {
     private lateinit var recycler: RecyclerView
     private lateinit var adapter: PackageAdapter
     private lateinit var search: SearchView
-    private val viewModel : HomeViewModel by viewModels()
     private lateinit var checked : MutableList<Int>
     private lateinit var filters : ChipGroup
 
@@ -68,8 +66,7 @@ class HomeFragment : Fragment() {
             }
         }
         app = activity?.application as MainApp
-        viewModel.list.value = app.packages
-        recycler.adapter = PackageAdapter(viewModel.list.value!!, object: PackageAdapter.OnItemClickListener {
+        recycler.adapter = PackageAdapter(app.parcels.findAll().toMutableList(), object: PackageAdapter.OnItemClickListener {
             override fun onItemClick(parcel: PackageModel) {
                 startActivityForResult(Intent(activity,PackageActivity::class.java).putExtra("parcel", parcel),0)
             }
@@ -100,6 +97,7 @@ class HomeFragment : Fragment() {
         super.onResume()
         checked.clear()
         search.setQuery("",false)
+        adapter.newList(app.parcels.findAll())
         adapter.notifyFull()
         filters.removeAllViews()
     }
@@ -110,7 +108,8 @@ class HomeFragment : Fragment() {
             setTitle("Delete Package")
             setMessage("Delete this package? This cannot be undone.")
             setPositiveButton(android.R.string.yes){_,_ ->
-                app.packages.remove(parcel)
+                app.parcels.delete(parcel)
+                adapter.newList(app.parcels.findAll())
                 adapter.notifyFull()
             }
             setNegativeButton(android.R.string.no){dialog,_ ->
