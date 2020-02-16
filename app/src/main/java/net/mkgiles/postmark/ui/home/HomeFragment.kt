@@ -1,5 +1,6 @@
 package net.mkgiles.postmark.ui.home
 
+import android.app.AlertDialog
 import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -34,7 +35,12 @@ class HomeFragment : Fragment() {
             override fun onItemClick(parcel: PackageModel) {
                 startActivityForResult(Intent(activity,PackageActivity::class.java).putExtra("parcel", parcel),0)
             }
-        })
+        },
+            object: PackageAdapter.OnItemClickListener {
+                override fun onItemClick(parcel: PackageModel) {
+                    showDeletePrompt(parcel)
+                }
+            })
         recycler.adapter?.notifyDataSetChanged()
         return binding.root
     }
@@ -42,5 +48,22 @@ class HomeFragment : Fragment() {
     override fun onResume() {
         super.onResume()
         recycler.adapter!!.notifyDataSetChanged()
+    }
+
+    fun showDeletePrompt(parcel: PackageModel){
+        val builder: AlertDialog.Builder = AlertDialog.Builder(activity)
+        builder.run{
+            setTitle("Delete Package")
+            setMessage("Delete this package? This cannot be undone.")
+            setPositiveButton(android.R.string.yes){_,_ ->
+                app.packages.remove(parcel)
+                recycler.adapter?.notifyDataSetChanged()
+            }
+            setNegativeButton(android.R.string.no){dialog,_ ->
+                dialog.cancel()
+            }
+            val dialog:AlertDialog = builder.create()
+            dialog.show()
+        }
     }
 }

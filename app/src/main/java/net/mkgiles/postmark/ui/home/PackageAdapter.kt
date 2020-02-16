@@ -10,12 +10,13 @@ import net.mkgiles.postmark.R
 import net.mkgiles.postmark.databinding.ListItemPackageBinding
 import net.mkgiles.postmark.models.PackageModel
 
-class PackageAdapter(private val list: MutableList<PackageModel>, private val listener: OnItemClickListener) : RecyclerView.Adapter<PackageAdapter.ViewHolder>() {
+class PackageAdapter(private val list: MutableList<PackageModel>, private val listener: OnItemClickListener, private val longListener: OnItemClickListener) : RecyclerView.Adapter<PackageAdapter.ViewHolder>() {
     class ViewHolder(private val view : View) : RecyclerView.ViewHolder(view){
-        fun bind(parcel: PackageModel, listener: OnItemClickListener){
+        fun bind(parcel: PackageModel, listener: OnItemClickListener, longListener: OnItemClickListener){
             val binding : ListItemPackageBinding = DataBindingUtil.getBinding(view)!!
             binding.parcel = parcel
             binding.listener = listener
+            binding.root.setOnLongClickListener{ longListener.onItemClick(parcel); true }
             binding.packageImage.setImageResource(R.drawable.ic_launcher_foreground)
             binding.packageCarrier.text = binding.root.context.resources.getStringArray(R.array.carriers)[parcel.carrier]
             binding.packageStatus.text = if (parcel.delivered) "Delivered" else "Pending Delivery"
@@ -35,6 +36,6 @@ class PackageAdapter(private val list: MutableList<PackageModel>, private val li
     }
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-        holder.bind(list[position], listener)
+        holder.bind(list[position], listener, longListener)
     }
 }
