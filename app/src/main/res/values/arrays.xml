@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string-array name="carriers">
+        <item>Select Carrier</item>
         <item>An Post</item>
         <item>Japan Post</item>
         <item>Royal Mail</item>

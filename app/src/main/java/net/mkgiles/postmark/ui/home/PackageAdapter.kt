@@ -48,4 +48,16 @@ class PackageAdapter(private var list: MutableList<PackageModel>, private val li
         }
         notifyDataSetChanged()
     }
+    fun notifyFull(){
+        list = fullList.toMutableList()
+        notifyDataSetChanged()
+    }
+    fun filter(filter: List<Int>){
+        list = fullList.toMutableList()
+        if(filter.isNotEmpty())
+            list = list.filter{
+                filter.contains(it.carrier)
+            }.toMutableList()
+        notifyDataSetChanged()
+    }
 }

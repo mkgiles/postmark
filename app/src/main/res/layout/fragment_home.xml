@@ -7,34 +7,62 @@
             name="viewModel"
             type="net.mkgiles.postmark.ui.home.HomeViewModel" />
     </data>
-<androidx.constraintlayout.widget.ConstraintLayout
-    android:layout_width="match_parent"
-    android:layout_height="match_parent">
 
-    <SearchView
-        android:id="@+id/search_bar"
+    <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="16dp"
-        android:layout_marginTop="16dp"
-        android:layout_marginEnd="16dp"
-        android:iconifiedByDefault="false"
-        android:queryHint="@string/search_hint"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        android:layout_height="match_parent">
 
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/home_recycler"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
-        android:layout_marginTop="16dp"
-        app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/search_bar"
-        tools:itemCount="5"
-        tools:listitem="@layout/list_item_package" />
-</androidx.constraintlayout.widget.ConstraintLayout>
+        <androidx.appcompat.widget.SearchView
+            android:id="@+id/search_bar"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:layout_marginTop="16dp"
+            app:iconifiedByDefault="false"
+            app:layout_constraintEnd_toStartOf="@+id/filter_spinner"
+            app:layout_constraintHorizontal_bias="0.5"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:queryHint="@string/search_hint">
+
+        </androidx.appcompat.widget.SearchView>
+
+        <Spinner
+            android:id="@+id/filter_spinner"
+            android:layout_width="wrap_content"
+            android:layout_height="0dp"
+            android:layout_marginEnd="16dp"
+            android:entries="@array/carriers"
+            android:spinnerMode="dialog"
+            app:layout_constraintBottom_toBottomOf="@+id/search_bar"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.5"
+            app:layout_constraintStart_toEndOf="@+id/search_bar"
+            app:layout_constraintTop_toTopOf="@+id/search_bar" />
+
+        <com.google.android.material.chip.ChipGroup
+            android:id="@+id/filters"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:layout_marginTop="16dp"
+            android:layout_marginEnd="16dp"
+            app:layout_constraintEnd_toEndOf="@+id/home_recycler"
+            app:layout_constraintStart_toStartOf="@+id/home_recycler"
+            app:layout_constraintTop_toBottomOf="@+id/search_bar" />
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/home_recycler"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:layout_marginTop="16dp"
+            android:layout_marginBottom="32dp"
+            app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/filters"
+            tools:itemCount="5"
+            tools:listitem="@layout/list_item_package" />
+    </androidx.constraintlayout.widget.ConstraintLayout>
 </layout>

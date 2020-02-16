@@ -20,7 +20,6 @@ class MainActivity : AppCompatActivity() {
         navBar.setNavigationOnClickListener {
             NavListDialogFragment.newInstance(3,navHost.findNavController()).show(supportFragmentManager, "dialog")
         }
-        navBar.replaceMenu(R.menu.main_app_menu)
         val fab : FloatingActionButton = binding.navBtn
         fab.setOnClickListener {
             val intent = Intent(this, PackageActivity::class.java)

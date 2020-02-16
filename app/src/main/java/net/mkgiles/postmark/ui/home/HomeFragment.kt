@@ -6,10 +6,14 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.AdapterView
+import androidx.appcompat.widget.SearchView
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.RecyclerView
+import com.google.android.material.chip.Chip
+import com.google.android.material.chip.ChipGroup
 import net.mkgiles.postmark.PackageActivity
 import net.mkgiles.postmark.R
 import net.mkgiles.postmark.databinding.FragmentHomeBinding
@@ -21,7 +25,10 @@ class HomeFragment : Fragment() {
     private lateinit var app : MainApp
     private lateinit var recycler: RecyclerView
     private lateinit var adapter: PackageAdapter
+    private lateinit var search: SearchView
     private val viewModel : HomeViewModel by viewModels()
+    private lateinit var checked : MutableList<Int>
+    private lateinit var filters : ChipGroup
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -30,7 +37,36 @@ class HomeFragment : Fragment() {
     ): View? {
         val binding : FragmentHomeBinding = DataBindingUtil.inflate(inflater,R.layout.fragment_home,container,false)
         recycler = binding.homeRecycler
-        val search = binding.searchBar
+        search = binding.searchBar
+        checked = mutableListOf()
+        filters = binding.filters
+        val carriers = resources.getStringArray(R.array.carriers)
+        val spinner = binding.filterSpinner
+        spinner.prompt = "Filter"
+        spinner.setSelection(-1)
+        spinner.onItemSelectedListener = object: AdapterView.OnItemSelectedListener{
+            override fun onNothingSelected(parent: AdapterView<*>?) {
+            }
+
+            override fun onItemSelected(parent: AdapterView<*>, view: View?, pos: Int, id: Long) {
+                if (pos != 0) {
+                    val chip = Chip(filters.context)
+                    chip.text = parent.getItemAtPosition(pos).toString()
+                    chip.isCloseIconVisible = true
+                    chip.setOnCloseIconClickListener {
+                        filters.removeView(chip)
+                        checked.remove(carriers.indexOf(chip.text))
+                        adapter.filter(checked)
+                    }
+                    if(checked.find{it == carriers.indexOf(chip.text)} == null) {
+                        filters.addView(chip)
+                        checked.add(carriers.indexOf(chip.text))
+                        adapter.filter(checked)
+                    }
+                    spinner.setSelection(0)
+                }
+            }
+        }
         app = activity?.application as MainApp
         viewModel.list.value = app.packages
         recycler.adapter = PackageAdapter(viewModel.list.value!!, object: PackageAdapter.OnItemClickListener {
@@ -45,7 +81,7 @@ class HomeFragment : Fragment() {
             })
         adapter = recycler.adapter as PackageAdapter
         adapter.notifyDataSetChanged()
-        search.setOnQueryTextListener(object: android.widget.SearchView.OnQueryTextListener {
+        search.setOnQueryTextListener(object: SearchView.OnQueryTextListener {
             override fun onQueryTextSubmit(query: String?): Boolean {
                 return false
             }
@@ -55,12 +91,17 @@ class HomeFragment : Fragment() {
                 return true
             }
         })
+        checked.clear()
+        filters.removeAllViews()
         return binding.root
     }
 
     override fun onResume() {
         super.onResume()
-        adapter.notifyDataSetChanged()
+        checked.clear()
+        search.setQuery("",false)
+        adapter.notifyFull()
+        filters.removeAllViews()
     }
 
     fun showDeletePrompt(parcel: PackageModel){
@@ -70,7 +111,7 @@ class HomeFragment : Fragment() {
             setMessage("Delete this package? This cannot be undone.")
             setPositiveButton(android.R.string.yes){_,_ ->
                 app.packages.remove(parcel)
-                adapter.notifyDataSetChanged()
+                adapter.notifyFull()
             }
             setNegativeButton(android.R.string.no){dialog,_ ->
                 dialog.cancel()
