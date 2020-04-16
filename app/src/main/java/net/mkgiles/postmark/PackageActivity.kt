@@ -1,5 +1,6 @@
 package net.mkgiles.postmark
 
+import android.content.Intent
 import android.os.Bundle
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
@@ -22,6 +23,10 @@ class PackageActivity : AppCompatActivity() {
             binding.parcel = it.get("parcel") as PackageModel
             edit = true
         }
+        if(edit){
+            binding.packageTitle.text = getString(R.string.editPackage)
+        }
+        binding.packageProviderSpinner.setSelection(binding.parcel!!.carrier)
         binding.packageSaveBtn.setOnClickListener {
             val parcel : PackageModel = binding.parcel!!
             if(binding.packageId.text.isNullOrBlank()){
@@ -33,6 +38,7 @@ class PackageActivity : AppCompatActivity() {
                     app.parcels.update(parcel)
                 else
                     app.parcels.add(parcel)
+                setResult(0, Intent().putExtra("parcel", parcel))
                 finish()
             }
         }

@@ -6,6 +6,7 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
+import net.mkgiles.postmark.MainActivity
 import net.mkgiles.postmark.R
 
 class AboutFragment : Fragment() {
@@ -18,6 +19,8 @@ class AboutFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View? {
         val root = inflater.inflate(R.layout.fragment_about, container, false)
+        val mainActivity = activity as MainActivity
+        mainActivity.changeBarBehavior(2)
         return root
     }
 }
