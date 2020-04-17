@@ -1,14 +1,15 @@
 package net.mkgiles.postmark
 
+import android.content.Intent
 import android.os.Bundle
-import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Toast
 import androidx.navigation.NavController
-import androidx.navigation.findNavController
+import com.firebase.ui.auth.AuthUI
+import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import kotlinx.android.synthetic.main.fragment_navigation_list_dialog.*
+
 class NavListDialogFragment(private val navController: NavController) : BottomSheetDialogFragment() {
 
     override fun onCreateView(
@@ -21,8 +22,17 @@ class NavListDialogFragment(private val navController: NavController) : BottomSh
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
         list.setNavigationItemSelectedListener {menuItem ->
-            navController.navigate(menuItem.itemId)
-            dismiss()
+            if(menuItem.itemId == R.id.sign_out){
+                AuthUI.getInstance().signOut(requireContext()).addOnCompleteListener {
+                    startActivity(Intent(requireActivity(), SplashActivity::class.java))
+                    requireActivity().finish()
+                    dismiss()
+                }
+            }
+            else {
+                navController.navigate(menuItem.itemId)
+                dismiss()
+            }
             true
 
         }
