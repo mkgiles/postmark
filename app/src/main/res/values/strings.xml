@@ -18,4 +18,5 @@
     <string name="editPackage">Edit Package</string>
     <string name="package_provider">Package Provider</string>
     <string name="delivery_status">Delivery Status</string>
+    <string name="version_announce">This is version 1.0</string>
 </resources>
