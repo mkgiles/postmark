@@ -12,17 +12,25 @@ import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.RecyclerView
+import com.firebase.ui.database.FirebaseRecyclerOptions
 import com.google.android.material.chip.Chip
 import com.google.android.material.chip.ChipGroup
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.database.*
 import net.mkgiles.postmark.MainActivity
 import net.mkgiles.postmark.PackageActivity
 import net.mkgiles.postmark.R
 import net.mkgiles.postmark.databinding.FragmentHomeBinding
 import net.mkgiles.postmark.main.MainApp
+import net.mkgiles.postmark.models.PackageModel
 
 class HomeFragment : Fragment() {
 
     private lateinit var app : MainApp
+    private lateinit var parcels : DatabaseReference
+    private lateinit var db : DatabaseReference
+    private lateinit var filtered : DatabaseReference
+    private lateinit var displaying: DatabaseReference
     private lateinit var recycler: RecyclerView
     private lateinit var adapter: PackageAdapter
     private lateinit var search: SearchView
@@ -53,6 +61,32 @@ class HomeFragment : Fragment() {
             }
 
             override fun onItemSelected(parent: AdapterView<*>, view: View?, pos: Int, id: Long) {
+                val update: () -> Unit = {
+                    filtered.removeValue()
+                    checked.forEach{
+                        parcels.orderByChild("carrier").equalTo(it.toDouble()).addChildEventListener(object : ChildEventListener {
+                            override fun onCancelled(p0: DatabaseError) {
+                            }
+
+                            override fun onChildMoved(p0: DataSnapshot, p1: String?) {
+                            }
+
+                            override fun onChildChanged(p0: DataSnapshot, p1: String?) {
+                            }
+
+                            override fun onChildAdded(p0: DataSnapshot, p1: String?) {
+                                filtered.child(p0.key!!).setValue(p0.value)
+                            }
+
+                            override fun onChildRemoved(p0: DataSnapshot) {
+                            }
+                        })
+                    }
+                    if(checked.isEmpty())
+                        nofilter()
+                    search.setQuery("",false)
+                    displayAll()
+                }
                 if (pos != 0) {
                     val chip = Chip(filters.context)
                     chip.text = parent.getItemAtPosition(pos).toString()
@@ -60,22 +94,26 @@ class HomeFragment : Fragment() {
                     chip.setOnCloseIconClickListener {
                         filters.removeView(chip)
                         checked.remove(carriers.indexOf(chip.text))
-                        adapter.filter(checked)
+                        update()
                     }
                     if(checked.find{it == carriers.indexOf(chip.text)} == null) {
                         filters.addView(chip)
                         checked.add(carriers.indexOf(chip.text))
-                        adapter.filter(checked)
+                        update()
                     }
                     spinner.setSelection(0)
                 }
             }
         }
         app = activity?.application as MainApp
-        recycler.adapter = PackageAdapter(app.parcels.findAll().toMutableList(),
-            PackageAdapter.ViewHolder.ClickListener { mainActivity.changeFragment(HomeFragmentDirections.actionNavigationHomeToViewFragment2(it)) })
+        db = app.database.getReference(FirebaseAuth.getInstance().currentUser!!.uid)
+        parcels = db.child("parcels")
+        filtered = db.child("filter")
+        displaying = db.child("display")
+        nofilter()
+        displayAll()
+        recycler.adapter = PackageAdapter(PackageAdapter.ViewHolder.ClickListener { mainActivity.changeFragment(HomeFragmentDirections.actionNavigationHomeToViewFragment2(it)) }, FirebaseRecyclerOptions.Builder<PackageModel>().setQuery(displaying, PackageModel::class.java).build())
         adapter = recycler.adapter as PackageAdapter
-        adapter.notifyDataSetChanged()
         ItemTouchHelper(PackageAdapter.ViewHolder.SwipeHelper({position ->
             showDeletePrompt(position)
         },{position ->
@@ -84,11 +122,35 @@ class HomeFragment : Fragment() {
         })).attachToRecyclerView(recycler)
         search.setOnQueryTextListener(object: SearchView.OnQueryTextListener {
             override fun onQueryTextSubmit(query: String?): Boolean {
+                if(query.isNullOrBlank())
+                    displayAll()
+                else
+                    filtered.orderByChild("name").startAt(query).endAt(query + "\uff8f").addListenerForSingleValueEvent(
+                        object : ValueEventListener{
+                            override fun onCancelled(p0: DatabaseError) {
+                            }
+                            override fun onDataChange(p0: DataSnapshot) {
+                                displaying.setValue(p0.value)
+                            }
+                        }
+                    )
                 return false
             }
 
             override fun onQueryTextChange(newText: String?): Boolean {
-                adapter.search(newText)
+                if(newText.isNullOrBlank())
+                    displayAll()
+                else
+                    filtered.orderByChild("name").startAt(newText).endAt(newText + "\uff8f").addListenerForSingleValueEvent(
+                        object : ValueEventListener{
+                            override fun onCancelled(p0: DatabaseError) {
+                            }
+
+                            override fun onDataChange(p0: DataSnapshot) {
+                                displaying.setValue(p0.value)
+                            }
+                        }
+                    )
                 return true
             }
         })
@@ -97,31 +159,80 @@ class HomeFragment : Fragment() {
         return binding.root
     }
 
-    override fun onResume() {
-        super.onResume()
-        checked.clear()
-        search.setQuery("",false)
-        adapter.newList(app.parcels.findAll())
-        adapter.notifyFull()
-        filters.removeAllViews()
+    override fun onStart() {
+        super.onStart()
+        adapter.startListening()
+        nofilter()
+        displayAll()
     }
 
-    fun showDeletePrompt(position: Int){
+    override fun onStop() {
+        super.onStop()
+        checked.clear()
+        search.setQuery("",true)
+        filters.removeAllViews()
+        adapter.stopListening()
+    }
+
+    private fun showDeletePrompt(position: Int){
         val builder: AlertDialog.Builder = AlertDialog.Builder(activity)
         builder.run{
             val parcel = adapter.getItem(position)
-            adapter.removeItem(position)
+            displaying.child(parcel.uid.toString()).removeValue()
+            adapter.notifyItemRemoved(position)
             setTitle("Delete Package")
             setMessage("Delete this package? This cannot be undone.")
             setPositiveButton(android.R.string.yes){_,_ ->
-                app.parcels.delete(parcel)
+                parcels.child(parcel.uid.toString()).removeValue()
             }
             setNegativeButton(android.R.string.no){dialog,_ ->
-                adapter.restoreItem(parcel, position)
+                displaying.child(parcel.uid.toString()).setValue(parcel)
+                adapter.notifyItemInserted(position)
                 dialog.cancel()
             }
             val dialog:AlertDialog = builder.create()
             dialog.show()
         }
+    }
+
+    private fun displayAll(){
+        displaying.removeValue()
+        filtered.addChildEventListener(object: ChildEventListener {
+            override fun onCancelled(p0: DatabaseError) {
+            }
+
+            override fun onChildMoved(p0: DataSnapshot, p1: String?) {
+            }
+
+            override fun onChildChanged(p0: DataSnapshot, p1: String?) {
+            }
+
+            override fun onChildAdded(p0: DataSnapshot, p1: String?) {
+                displaying.child(p0.key!!).setValue(p0.value)
+            }
+
+            override fun onChildRemoved(p0: DataSnapshot) {
+            }
+        })
+    }
+    private fun nofilter(){
+        filtered.removeValue()
+        parcels.addChildEventListener(object: ChildEventListener {
+            override fun onCancelled(p0: DatabaseError) {
+            }
+
+            override fun onChildMoved(p0: DataSnapshot, p1: String?) {
+            }
+
+            override fun onChildChanged(p0: DataSnapshot, p1: String?) {
+            }
+
+            override fun onChildAdded(p0: DataSnapshot, p1: String?) {
+                filtered.child(p0.key!!).setValue(p0.value)
+            }
+
+            override fun onChildRemoved(p0: DataSnapshot) {
+            }
+        })
     }
 }

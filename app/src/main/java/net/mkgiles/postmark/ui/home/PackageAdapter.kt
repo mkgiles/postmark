@@ -11,14 +11,17 @@ import androidx.core.graphics.drawable.toBitmap
 import androidx.databinding.DataBindingUtil
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.RecyclerView
+import com.firebase.ui.database.FirebaseRecyclerAdapter
+import com.firebase.ui.database.FirebaseRecyclerOptions
 import net.mkgiles.postmark.R
 import net.mkgiles.postmark.databinding.ListItemPackageBinding
 import net.mkgiles.postmark.models.PackageModel
 import kotlin.math.abs
 import kotlin.math.round
 
-class PackageAdapter(private var list: MutableList<PackageModel>, private var listener: View.OnClickListener) : RecyclerView.Adapter<PackageAdapter.ViewHolder>(){
-    private var fullList : List<PackageModel>  = list
+class PackageAdapter(private var listener: View.OnClickListener,
+                     options: FirebaseRecyclerOptions<PackageModel>
+) : FirebaseRecyclerAdapter<PackageModel, PackageAdapter.ViewHolder>(options) {
     class ViewHolder(private val view : View) : RecyclerView.ViewHolder(view){
         private lateinit var binding : ListItemPackageBinding
         fun bind(parcel: PackageModel, listener: View.OnClickListener){
@@ -86,52 +89,56 @@ class PackageAdapter(private var list: MutableList<PackageModel>, private var li
         val view : ListItemPackageBinding = DataBindingUtil.inflate(LayoutInflater.from(parent.context),R.layout.list_item_package,parent, false)
         return ViewHolder(view.root)
     }
+//
+//    override fun getItemCount(): Int {
+//        return list.size
+//    }
+//
+//    override fun onBindViewHolder(holder: ViewHolder, position: Int) {
+//        holder.bind(list[position],listener)
+//    }
+//
+//    fun getParcel(position: Int): PackageModel{
+//        return(list[position])
+//    }
+//
+//    fun removeItem(position: Int){
+//        list.removeAt(position)
+//        notifyItemRemoved(position)
+//    }
+//
+//    fun restoreItem(parcel: PackageModel,position: Int){
+//        list.add(position,parcel)
+//        notifyItemInserted(position)
+//    }
+//
+//    fun search(query: String?){
+//        list = if(query.isNullOrEmpty()){
+//            fullList.toMutableList()
+//        } else {
+//            fullList.filter{it.name.contains(query)}.toMutableList()
+//        }
+//        notifyDataSetChanged()
+//    }
+//    fun notifyFull(){
+//        list = fullList.toMutableList()
+//        notifyDataSetChanged()
+//    }
+//    fun filter(filter: List<Int>){
+//        list = fullList.toMutableList()
+//        if(filter.isNotEmpty())
+//            list = list.filter{
+//                filter.contains(it.carrier)
+//            }.toMutableList()
+//        notifyDataSetChanged()
+//    }
+//    fun newList(newlist: List<PackageModel>){
+//        list = newlist.toMutableList()
+//        fullList = list
+//        notifyDataSetChanged()
+//    }
 
-    override fun getItemCount(): Int {
-        return list.size
-    }
-
-    override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-        holder.bind(list[position],listener)
-    }
-
-    fun getItem(position: Int): PackageModel{
-        return(list[position])
-    }
-
-    fun removeItem(position: Int){
-        list.removeAt(position)
-        notifyItemRemoved(position)
-    }
-
-    fun restoreItem(parcel: PackageModel,position: Int){
-        list.add(position,parcel)
-        notifyItemInserted(position)
-    }
-
-    fun search(query: String?){
-        list = if(query.isNullOrEmpty()){
-            fullList.toMutableList()
-        } else {
-            fullList.filter{it.name.contains(query)}.toMutableList()
-        }
-        notifyDataSetChanged()
-    }
-    fun notifyFull(){
-        list = fullList.toMutableList()
-        notifyDataSetChanged()
-    }
-    fun filter(filter: List<Int>){
-        list = fullList.toMutableList()
-        if(filter.isNotEmpty())
-            list = list.filter{
-                filter.contains(it.carrier)
-            }.toMutableList()
-        notifyDataSetChanged()
-    }
-    fun newList(newlist: List<PackageModel>){
-        list = newlist.toMutableList()
-        fullList = list
-        notifyDataSetChanged()
+    override fun onBindViewHolder(holder: ViewHolder, position: Int, model: PackageModel) {
+        holder.bind(model,listener)
     }
 }

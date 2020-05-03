@@ -19,6 +19,7 @@ class SplashActivity : AppCompatActivity() {
             val authui = AuthUI.getInstance()
             if(auth.currentUser != null){
                 startActivity(Intent(this,MainActivity::class.java))
+                finish()
             }
             else{
                 startActivityForResult(authui.createSignInIntentBuilder()
